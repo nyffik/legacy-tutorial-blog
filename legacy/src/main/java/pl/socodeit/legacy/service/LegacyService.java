@@ -1,16 +1,19 @@
 package pl.socodeit.legacy.service;
 
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.List;
-
+@RequiredArgsConstructor
 public class LegacyService {
 
-    private ExternalService externalService;
-    private AnotherService anotherService;
-    private NextService nextService;
+    private final ExternalService externalService;
+    private final AnotherService anotherService;
+    private final NextService nextService;
 
     public String veryImportantLegacyLogic(String a, Integer b, boolean c) {
-        if (c) {
+        if (!c) {
             a = externalService.callRemote();
         }
 
@@ -25,7 +28,7 @@ public class LegacyService {
         if (l.size() - l2.size() > 0) {
             return "Duplicates exist for id " + a;
         } else {
-            return "No dupliactes found for id" + a;
+            return "No dupliactes found for id " + a;
         }
     }
 }
