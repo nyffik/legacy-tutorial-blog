@@ -1,7 +1,6 @@
 package pl.socodeit.legacy.service;
 
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,23 +11,41 @@ public class LegacyService {
     private final AnotherService anotherService;
     private final NextService nextService;
 
-    public String veryImportantLegacyLogic(String a, Integer b, boolean c) {
-        if (!c) {
-            a = externalService.callRemote();
-        }
+    public String veryImportantLegacyLogic(String id, Integer version, boolean couldCallRemote) {
+        id = callRemote(id, couldCallRemote);
 
-        List<LegacyEntity> l = new ArrayList<>();
-        for (int i = 0; i < b; i++) {
-            LegacyEntity le = anotherService.getFromDb(a, i);
-            l.add(le);
-        }
+        List<LegacyEntity> legacyEntities = findByLegacyEntityAndVersionLessOrEqual(id, version);
 
-        List<LegacyEntity> l2 = nextService.removeDuplicates(l);
+        return checkDuplicates(id, legacyEntities);
+    }
 
-        if (l.size() - l2.size() > 0) {
-            return "Duplicates exist for id " + a;
+    private String checkDuplicates(String id, List<LegacyEntity> legacyEntities) {
+        List<LegacyEntity> legacyEntitiesWithoutDuplicates = nextService.removeDuplicates(legacyEntities);
+
+        if (doListsHaveDifferentSize(legacyEntities, legacyEntitiesWithoutDuplicates)) {
+            return "Duplicates exist for id " + id;
         } else {
-            return "No dupliactes found for id " + a;
+            return "No dupliactes found for id " + id;
         }
+    }
+
+    private boolean doListsHaveDifferentSize(List<LegacyEntity> legacyEntities, List<LegacyEntity> legacyEntitiesWithoutDuplicates) {
+        return legacyEntities.size() - legacyEntitiesWithoutDuplicates.size() > 0;
+    }
+
+    private List<LegacyEntity> findByLegacyEntityAndVersionLessOrEqual(String id, Integer version) {
+        List<LegacyEntity> legacyEntities = new ArrayList<>();
+        for (int i = 0; i < version; i++) {
+            LegacyEntity le = anotherService.getFromDb(id, i);
+            legacyEntities.add(le);
+        }
+        return legacyEntities;
+    }
+
+    private String callRemote(String id, boolean couldCallRemote) {
+        if (!couldCallRemote) {
+            return externalService.callRemote();
+        }
+        return id;
     }
 }
